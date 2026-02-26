@@ -1,10 +1,16 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import type { UIMessage } from 'ai';
 import ChatMessage from './ChatMessage';
 
-export default function MessageList({ messages }: { messages: UIMessage[] }) {
+export type ChatMessageType = {
+  id: string;
+  role: 'user' | 'assistant';
+  content: string;
+  isImage?: boolean;
+};
+
+export default function MessageList({ messages }: { messages: ChatMessageType[] }) {
   const endRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -21,7 +27,7 @@ export default function MessageList({ messages }: { messages: UIMessage[] }) {
 
   return (
     <div className="flex-1 overflow-y-auto p-4 space-y-3">
-      {messages.map(m => (
+      {messages.map((m) => (
         <ChatMessage key={m.id} message={m} />
       ))}
       <div ref={endRef} />
