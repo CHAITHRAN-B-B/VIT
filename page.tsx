@@ -1,47 +1,75 @@
 'use client';
 
-import { useChat } from '@ai-sdk/react';
 import { useState } from 'react';
 import MessageList from './components/MessageList';
 import ChatInput from './components/ChatInput';
 
 export default function Chat() {
+  const [messages, setMessages] = useState<any[]>([]);
   const [input, setInput] = useState('');
-  const { messages, sendMessage, status } = useChat();
-  const isLoading = status === 'streaming' || status === 'submitted';
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleImageUpload = async (file: File) => {
-    const imageUrl = URL.createObjectURL(file);
+  // 🟢 Handle text message
+  const handleTextSubmit = async (e: any) => {
+    e.preventDefault();
+    if (!input.trim()) return;
 
-    // Show image in chat (UI only)
-    sendMessage({
-      role: 'user',
-      content: [
-        { type: 'text', text: 'Please analyze this image.' },
-        { type: 'image', image: imageUrl }
-      ]
-    });
+    const userMessage = { role: 'user', content: input };
+    setMessages(prev => [...prev, userMessage]);
+    setInput('');
+    setIsLoading(true);
 
-    // Run ViT
     const formData = new FormData();
-    formData.append('file', file);
+    formData.append('text', input);
 
-    const res = await fetch('http://localhost:8000/predict', {
+    const res = await fetch('/api/chat', {
       method: 'POST',
       body: formData,
     });
 
     const data = await res.json();
 
-    // Now trigger Gemini THROUGH useChat
-    sendMessage(
+    setMessages(prev => [
+      ...prev,
+      { id: crypto.randomUUID() ,role: 'assistant', content: data.text },
+    ]);
+
+    setIsLoading(false);
+  };
+
+  // 🟢 Handle image upload
+  const handleImageUpload = async (file: File) => {
+    setIsLoading(true);
+
+    // Show image in UI
+    const imageUrl = URL.createObjectURL(file);
+
+    setMessages(prev => [
+      ...prev,
       {
-        text: 'Generate forensic explanation for the uploaded image.'
+        id: crypto.randomUUID(),
+        role: 'user',
+        content: imageUrl,
+        isImage: true,
       },
-      {
-        data: { vitResult: data }
-      }
-    );
+    ]);
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const res = await fetch('/api/chat', {
+      method: 'POST',
+      body: formData,
+    });
+
+    const data = await res.json();
+
+    setMessages(prev => [
+      ...prev,
+      { id: crypto.randomUUID(),role: 'assistant', content: data.text },
+    ]);
+
+    setIsLoading(false);
   };
 
   return (
@@ -56,12 +84,7 @@ export default function Chat() {
         input={input}
         setInput={setInput}
         isLoading={isLoading}
-        onSubmit={e => {
-          e.preventDefault();
-          if (!input.trim()) return;
-          sendMessage({ text: input });
-          setInput('');
-        }}
+        onSubmit={handleTextSubmit}
         onImageUpload={handleImageUpload}
       />
     </div>
