@@ -1,49 +1,37 @@
-import type { UIMessage } from 'ai';
+'use client';
 
-export default function ChatMessage({ message }: { message: UIMessage }) {
+export type ChatMessageType = {
+  id: string;
+  role: 'user' | 'assistant';
+  content: string;
+  isImage?: boolean;
+};
+
+export default function ChatMessage({
+  message,
+}: {
+  message: ChatMessageType;
+}) {
   const isUser = message.role === 'user';
-
-  let parts: any[] = [];
-
-  // Case 1: New AI SDK format
-  if (Array.isArray(message.parts)) {
-    parts = message.parts;
-  }
-
-  // Case 2: content is already array (image/text structured)
-  else if (Array.isArray(message.content)) {
-    parts = message.content;
-  }
-
-  // Case 3: content is plain string
-  else if (typeof message.content === 'string') {
-    parts = [{ type: 'text', text: message.content }];
-  }
-
-  const textParts = parts.filter(p => p.type === 'text');
-  const imageParts = parts.filter(p => p.type === 'image');
 
   return (
     <div className={`flex ${isUser ? 'justify-end' : 'justify-start'}`}>
       <div
-        className={`max-w-[80%] px-4 py-2.5 rounded-2xl text-sm leading-relaxed whitespace-pre-wrap space-y-2 ${
+        className={`max-w-[80%] px-4 py-2.5 rounded-2xl text-sm leading-relaxed whitespace-pre-wrap ${
           isUser
             ? 'bg-foreground text-background rounded-br-md'
             : 'bg-zinc-100 dark:bg-zinc-800 rounded-bl-md'
         }`}
       >
-        {textParts.map((part, index) => (
-          <p key={`text-${index}`}>{part.text}</p>
-        ))}
-
-        {imageParts.map((part, index) => (
+        {message.isImage ? (
           <img
-            key={`img-${index}`}
-            src={part.image}
+            src={message.content}
             alt="Uploaded"
             className="rounded-xl max-w-xs"
           />
-        ))}
+        ) : (
+          <p>{message.content}</p>
+        )}
       </div>
     </div>
   );
