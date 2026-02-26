@@ -23,9 +23,11 @@ export default function ChatInput({
       <input
         type="file"
         accept="image/*"
+        disabled={isLoading}
         onChange={e => {
           if (e.target.files && e.target.files[0]) {
             onImageUpload(e.target.files[0]);
+            e.target.value='';
           }
         }}
         className="text-sm"
