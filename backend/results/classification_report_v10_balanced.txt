@@ -1,0 +1,12 @@
+ViT v10 — Balanced Evaluation Report
+ROC-AUC: 0.8979
+Optimal threshold (Youden J): 0.5726
+==========================================================
+              precision    recall  f1-score   support
+
+          ai     0.8364    0.7854    0.8101     23500
+        real     0.7977    0.8464    0.8214     23500
+
+    accuracy                         0.8159     47000
+   macro avg     0.8171    0.8159    0.8157     47000
+weighted avg     0.8171    0.8159    0.8157     47000
